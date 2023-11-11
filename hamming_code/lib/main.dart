@@ -35,7 +35,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Binary Signal Chart'),
+        title: const Text('Binary Signal Chart'),
         backgroundColor: Colors.amber,
       ),
       body: Column(
@@ -85,7 +85,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
             LineChartData(
               lineBarsData: [
                 LineChartBarData(
-                  color: Colors.purpleAccent,
+                  color: Colors.red,
                   // Datos del gráfico
                   spots: signalData
                       .asMap()
@@ -122,9 +122,9 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
       case 'PolarRZ':
         signalData = generatePolarRZSignal(binaryList);
         break;
-    /*   case 'Manchester':
+       case 'Manchester':
         signalData = generateManchesterSignal(binaryList);
-        break;
+        break;/*
       case 'ManchesterDifferential':
         signalData = generateManchesterDifferentialSignal(binaryList);
         break;
@@ -163,7 +163,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
     if (binaryList.isNotEmpty && binaryList[0] == 1) {
       invert = true;
     }
-    
+
     for (int i = 0; i < binaryList.length; i++) {
       if (binaryList[i] == 1) {
         invert = !invert;
@@ -179,9 +179,6 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
     return signal;
   }
 
-
-
-
   List<double> generatePolarRZSignal(List<int> binaryList) {
     List<double> signal = [];
     for (int bit in binaryList) {
@@ -193,4 +190,20 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
     }
     return signal;
   }
+
+  List<double> generateManchesterSignal(List<int> binaryList) {
+    List<double> signal = [];
+
+    for (int i = 0; i < binaryList.length; i++) {
+      // Para bit 0, transición de voltaje de positivo a negativo (de 1 a -1)
+      if (binaryList[i] == 0) {
+        signal.addAll([1.0, -1.0]);
+      } else {
+        // Para bit 1, transición de voltaje de negativo a positivo (de -1 a 1)
+        signal.addAll([-1.0, 1.0]);
+      }
+    }
+    return signal;
+  }
+
 }
