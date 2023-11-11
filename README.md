@@ -1,1 +1,1 @@
-# hamming-code
+# Binary Signal
