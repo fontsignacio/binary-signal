@@ -80,13 +80,29 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
               );
             }).toList(),
           ),
+          const SizedBox(height: 10),
           Expanded(
             child: LineChart(
             LineChartData(
+              titlesData: const FlTitlesData(
+                topTitles: AxisTitles(
+                  axisNameWidget: Text(''),
+                ),
+                rightTitles: AxisTitles(
+                  axisNameWidget: Text('')
+                )
+              ),
+              extraLinesData: ExtraLinesData(
+                horizontalLines: [
+                  HorizontalLine(
+                    y: 0, 
+                    color: Colors.black.withOpacity(0.8),
+                  ),
+                ],
+              ),  
               lineBarsData: [
                 LineChartBarData(
                   color: Colors.red,
-                  // Datos del gráfico
                   spots: signalData
                       .asMap()
                       .entries
@@ -103,8 +119,9 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
                 ),
               ],
             ),
-                    ),
+          ),
         ),
+        const SizedBox(height: 50),
       ],
     ),
   );
@@ -124,13 +141,13 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
         break;
        case 'Manchester':
         signalData = generateManchesterSignal(binaryList);
-        break;/*
+        break;
       case 'ManchesterDifferential':
         signalData = generateManchesterDifferentialSignal(binaryList);
         break;
       case 'AMI':
         signalData = generateAMISignal(binaryList);
-        break;
+        break;/*
       case 'B8ZS':
         signalData = generateB8ZSSignal(binaryList);
         break;
@@ -201,6 +218,47 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
       } else {
         // Para bit 1, transición de voltaje de negativo a positivo (de -1 a 1)
         signal.addAll([-1.0, 1.0]);
+      }
+    }
+    return signal;
+  }
+
+
+List<double> generateManchesterDifferentialSignal(List<int> binaryList) {
+  List<double> signal = [];
+  bool positive = binaryList.isNotEmpty? binaryList[0] == 1 : true;
+
+  for (int i = 0; i < binaryList.length; i++) {
+    if (binaryList[i] == 0) {
+      // Transición continua para el bit 0
+      signal.add(positive ? 1.0 : -1.0); // Cambia al voltaje opuesto
+    } else {
+      if(i == 0) signal.add(1.0);
+      // Transición solo a la mitad del intervalo de tiempo para el bit 1
+      positive = !positive; // Invierte el nivel de voltaje a mitad de bit
+      signal.add(positive ? 1.0 : -1.0); // Cambia a voltaje opuesto a mitad de bit
+    }
+    // Mantiene el mismo voltaje para la segunda mitad del bit
+    signal.add(positive ? -1.0 : 1.0);
+  }
+
+  return signal;
+}
+
+  List<double> generateAMISignal(List<int> binaryList) {
+    List<double> signal = [];
+    bool positive = true;
+
+    for (int i = 0; i < binaryList.length; i++) {
+      if (binaryList[i] == 0) {
+        signal.add(0.0);
+      } else {
+        signal.add(positive ? 1.0 : -1.0);
+        positive = !positive;
+      }
+      // Añadir un 0 adicional para el último dígito 0 en la cadena
+      if (i == binaryList.length - 1 && binaryList[i] == 0) {
+        signal.add(0.0);
       }
     }
     return signal;
