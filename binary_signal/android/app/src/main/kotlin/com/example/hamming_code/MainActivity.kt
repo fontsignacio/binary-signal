@@ -1,4 +1,4 @@
-package com.example.hamming_code
+package com.example.binary_signal
 
 import io.flutter.embedding.android.FlutterActivity
 

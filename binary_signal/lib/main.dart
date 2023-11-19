@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -29,7 +28,8 @@ class BinarySignalChart extends StatefulWidget {
 class _BinarySignalChartState extends State<BinarySignalChart> {
   String binaryInput = '';
   List<double> signalData = [];
-  String selectedSignalType = 'NRZ'; // Inicialmente selecciona NRZ
+  List<double> signalDataDefault = [];
+  String selectedSignalType = 'NRZ';
 
   @override
   Widget build(BuildContext context) {
@@ -39,93 +39,172 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
         backgroundColor: Colors.amber,
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-1]'))],
-              onChanged: (value) {
-                setState(() {
-                  binaryInput = value;
-                  generateSignalData(binaryInput, selectedSignalType);
-                });
-              },
-              decoration: const InputDecoration(labelText: 'Entrada Binaria'),
-            ),
-          ),
-          // Agrega un Dropdown para seleccionar el tipo de señal
-          DropdownButton<String>(
-            value: selectedSignalType,
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedSignalType = newValue!;
-                generateSignalData(binaryInput, selectedSignalType);
-              });
-            },
-            items: <String>[
-              'NRZ',
-              'PolarNRZI',
-              'PolarRZ',
-              'Manchester',
-              'ManchesterDifferential',
-              'AMI',
-              'B8ZS',
-              'HDB3'
-            ].map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: LineChart(
-            LineChartData(
-              titlesData: const FlTitlesData(
-                topTitles: AxisTitles(
-                  axisNameWidget: Text(''),
-                ),
-                rightTitles: AxisTitles(
-                  axisNameWidget: Text('')
-                )
-              ),
-              extraLinesData: ExtraLinesData(
-                horizontalLines: [
-                  HorizontalLine(
-                    y: 0, 
-                    color: Colors.black.withOpacity(0.8),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 30, bottom: 10, right: 10),
+                  child: TextField(
+                    style: const TextStyle(fontSize: 20),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-1]')),
+                      LengthLimitingTextInputFormatter(8),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        binaryInput = value;
+                        generateSignalData(binaryInput, selectedSignalType);
+                        signalByDefault(binaryInput, selectedSignalType);
+                      });
+                    },
+                    decoration:
+                        const InputDecoration(labelText: 'Entrada Binaria'),
                   ),
-                ],
-              ),  
-              lineBarsData: [
-                LineChartBarData(
-                  color: Colors.red,
-                  spots: signalData
-                      .asMap()
-                      .entries
-                      .expand((entry) {
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: DropdownButton<String>(
+                  dropdownColor: Colors.white,
+                  value: selectedSignalType,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedSignalType = newValue!;
+                      generateSignalData(binaryInput, selectedSignalType);
+                      signalByDefault(binaryInput, selectedSignalType);
+                    });
+                  },
+                  items: <String>[
+                    'NRZ',
+                    'PolarNRZI',
+                    'PolarRZ',
+                    'Manchester',
+                    'ManchesterDifferential',
+                    'AMI',
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text('NRZ',
+              style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: LineChart(
+                LineChartData(
+                  titlesData: const FlTitlesData(
+                      topTitles: AxisTitles(
+                        axisNameWidget: Text(''),
+                      ),
+                      rightTitles: AxisTitles(axisNameWidget: Text(''))),
+                  extraLinesData: ExtraLinesData(
+                    horizontalLines: [
+                      HorizontalLine(
+                        y: 0,
+                        color: Colors.black.withOpacity(0.8),
+                      ),
+                    ],
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      color: Colors.red,
+                      spots: signalDataDefault.asMap().entries.expand((entry) {
                         // Mapear puntos para mantener una línea horizontal en cambios de bit
-                        if (entry.key > 0 && signalData[entry.key - 1] != entry.value) {
+                        if (entry.key > 0 &&
+                            signalDataDefault[entry.key - 1] != entry.value) {
                           return [
-                            FlSpot(entry.key.toDouble() / 2, signalData[entry.key - 1] * 5),
-                            FlSpot(entry.key.toDouble() / 2, entry.value * 5)
+                            FlSpot(entry.key.toDouble() / 2,
+                                signalDataDefault[entry.key - 1]),
+                            FlSpot(entry.key.toDouble() / 2, entry.value)
                           ];
                         }
-                        return [FlSpot(entry.key.toDouble() / 2, entry.value * 5)];
+                        return [FlSpot(entry.key.toDouble() / 2, entry.value)];
                       }).toList(),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 50),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 20),
+          Visibility(
+              visible: selectedSignalType != 'NRZ',
+              child: Text(selectedSignalType,
+                  style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold))),
+          Visibility(
+            visible: selectedSignalType != 'NRZ',
+            child: Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: LineChart(
+                  LineChartData(
+                    titlesData: const FlTitlesData(
+                        topTitles: AxisTitles(
+                          axisNameWidget: Text(''),
+                        ),
+                        rightTitles: AxisTitles(axisNameWidget: Text(''))),
+                    extraLinesData: ExtraLinesData(
+                      horizontalLines: [
+                        HorizontalLine(
+                          y: 0,
+                          color: Colors.black.withOpacity(0.8),
+                        ),
+                      ],
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        color: Colors.red,
+                        spots: signalData.asMap().entries.expand((entry) {
+                          // Mapear puntos para mantener una línea horizontal en cambios de bit
+                          if (entry.key > 0 &&
+                              signalData[entry.key - 1] != entry.value) {
+                            return [
+                              FlSpot(entry.key.toDouble() / 2,
+                                  signalData[entry.key - 1]),
+                              FlSpot(entry.key.toDouble() / 2, entry.value)
+                            ];
+                          }
+                          return [
+                            FlSpot(entry.key.toDouble() / 2, entry.value)
+                          ];
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 50),
+        ],
+      ),
+    );
+  }
+
+  List<double> signalByDefault(String binaryInput, String signalType) {
+    List<int> binaryList = binaryInput.split('').map(int.parse).toList();
+    signalDataDefault = generateNRZSignal(binaryList);
+    return signalDataDefault;
+  }
 
   void generateSignalData(String binaryInput, String signalType) {
     List<int> binaryList = binaryInput.split('').map(int.parse).toList();
@@ -139,7 +218,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
       case 'PolarRZ':
         signalData = generatePolarRZSignal(binaryList);
         break;
-       case 'Manchester':
+      case 'Manchester':
         signalData = generateManchesterSignal(binaryList);
         break;
       case 'ManchesterDifferential':
@@ -147,15 +226,8 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
         break;
       case 'AMI':
         signalData = generateAMISignal(binaryList);
-        break;/*
-      case 'B8ZS':
-        signalData = generateB8ZSSignal(binaryList);
         break;
-      case 'HDB3':
-        signalData = generateHDB3Signal(binaryList);
-        break; */
       default:
-        // Implementación de señal por defecto (NRZ)
         signalData = generateNRZSignal(binaryList);
     }
   }
@@ -185,7 +257,6 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
       if (binaryList[i] == 1) {
         invert = !invert;
       }
-      
       if (invert) {
         signal.addAll(List.filled(4, -1.0));
       } else {
@@ -223,27 +294,27 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
     return signal;
   }
 
+  List<double> generateManchesterDifferentialSignal(List<int> binaryList) {
+    List<double> signal = [];
+    bool positive = binaryList.isNotEmpty ? binaryList[0] == 1 : true;
 
-List<double> generateManchesterDifferentialSignal(List<int> binaryList) {
-  List<double> signal = [];
-  bool positive = binaryList.isNotEmpty? binaryList[0] == 1 : true;
-
-  for (int i = 0; i < binaryList.length; i++) {
-    if (binaryList[i] == 0) {
-      // Transición continua para el bit 0
-      signal.add(positive ? 1.0 : -1.0); // Cambia al voltaje opuesto
-    } else {
-      if(i == 0) signal.add(1.0);
-      // Transición solo a la mitad del intervalo de tiempo para el bit 1
-      positive = !positive; // Invierte el nivel de voltaje a mitad de bit
-      signal.add(positive ? 1.0 : -1.0); // Cambia a voltaje opuesto a mitad de bit
+    for (int i = 0; i < binaryList.length; i++) {
+      if (binaryList[i] == 0) {
+        // Transición continua para el bit 0
+        signal.add(positive ? 1.0 : -1.0); // Cambia al voltaje opuesto
+      } else {
+        if (i == 0) signal.add(1.0);
+        // Transición solo a la mitad del intervalo de tiempo para el bit 1
+        positive = !positive; // Invierte el nivel de voltaje a mitad de bit
+        signal.add(
+            positive ? 1.0 : -1.0); // Cambia a voltaje opuesto a mitad de bit
+      }
+      // Mantiene el mismo voltaje para la segunda mitad del bit
+      signal.add(positive ? -1.0 : 1.0);
     }
-    // Mantiene el mismo voltaje para la segunda mitad del bit
-    signal.add(positive ? -1.0 : 1.0);
-  }
 
-  return signal;
-}
+    return signal;
+  }
 
   List<double> generateAMISignal(List<int> binaryList) {
     List<double> signal = [];
@@ -263,5 +334,4 @@ List<double> generateManchesterDifferentialSignal(List<int> binaryList) {
     }
     return signal;
   }
-
 }
