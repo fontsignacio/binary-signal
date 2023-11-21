@@ -109,7 +109,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
               child: LineChart(
                 LineChartData(
                   titlesData: const FlTitlesData(
-                      //bottomTitles: AxisTitles(axisNameWidget: Text('')),
+                      ///bottomTitles: AxisTitles(axisNameWidget: Text('')),
                       topTitles: AxisTitles(axisNameWidget: Text('')),
                       rightTitles: AxisTitles(axisNameWidget: Text(''))),
                   extraLinesData: ExtraLinesData(
@@ -289,6 +289,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
 
     for (int i = 0; i < binaryList.length; i++) {
       if (binaryList[i] == 0) {
+        if (i == 0) signal.add(-1.0);
         signal.add(positive ? 1.0 : -1.0);
       } else {
         if (i == 0) signal.add(1.0);
@@ -296,11 +297,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
         signal.add(positive ? 1.0 : -1.0);
       }
       signal.add(positive ? -1.0 : 1.0);
-      if (i == binaryList.length - 1) {
-        signal.add(positive ? 1.0 : -1.0);
-      }
     }
-    
     return signal;
   }
 
