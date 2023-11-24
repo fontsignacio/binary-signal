@@ -109,7 +109,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
               child: LineChart(
                 LineChartData(
                   titlesData: const FlTitlesData(
-                      ///bottomTitles: AxisTitles(axisNameWidget: Text('')),
+                      bottomTitles: AxisTitles(axisNameWidget: Text('')),
                       topTitles: AxisTitles(axisNameWidget: Text('')),
                       rightTitles: AxisTitles(axisNameWidget: Text(''))),
                   extraLinesData: ExtraLinesData(
@@ -120,7 +120,8 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
                       ),
                     ],
                   ),
-                  
+                  minY: -0.5,
+                  maxY: 1.5,
                   lineBarsData: [
                     LineChartBarData(
                       dotData: const FlDotData(show: false),
@@ -158,7 +159,7 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
                 child: LineChart(
                   LineChartData(
                     titlesData: const FlTitlesData(
-                        //bottomTitles: AxisTitles(axisNameWidget: Text('')),
+                        bottomTitles: AxisTitles(axisNameWidget: Text('')),
                         topTitles: AxisTitles(axisNameWidget: Text('')),
                         rightTitles: AxisTitles(axisNameWidget: Text(''))),
                     extraLinesData: ExtraLinesData(
@@ -169,6 +170,8 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
                         ),
                       ],
                     ),
+                    minY: -1.5,
+                    maxY: 1.5,
                     lineBarsData: [
                       LineChartBarData(
                         dotData: const FlDotData(show: false),
@@ -289,14 +292,15 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
 
     for (int i = 0; i < binaryList.length; i++) {
       if (binaryList[i] == 0) {
-        if (i == 0) signal.add(-1.0);
         signal.add(positive ? 1.0 : -1.0);
       } else {
-        if (i == 0) signal.add(1.0);
         positive = !positive;
         signal.add(positive ? 1.0 : -1.0);
       }
       signal.add(positive ? -1.0 : 1.0);
+      if (i == binaryList.length - 1) {
+        signal.add(binaryList[i] == 0 ? 1.0 : -1.0);
+      }
     }
     return signal;
   }
@@ -316,5 +320,4 @@ class _BinarySignalChartState extends State<BinarySignalChart> {
     }
     return signal;
   }
-
 }
